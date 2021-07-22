@@ -1,0 +1,15 @@
+venv
+secret.*
+settings.py
+settings.json
+*.pyc
+*.log
+__pycache__
+.pytest_cache
+.env
+.vscode
+logs/
+
+app/public/*
+app/tests/selenium/images/*
+dev

@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mail-api:
+    build: .
+    container_name: mail-api
+    networks:
+      - mail-api-network
+    restart: unless-stopped
+
+  mail-redis:
+    image: redis:6.2.1-alpine
+    container_name: mail-redis
+    restart: unless-stopped
+    # cap_add:
+    #   - SYS_NICE # CAP_SYS_NICE
+    ports:
+      - '6399:6379'
+    networks:
+      - mail-api-network
+
+networks:
+  mail-api-network:
+    name: mail-api-net
