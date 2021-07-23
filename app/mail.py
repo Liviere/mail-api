@@ -53,11 +53,9 @@ class Mail(object):
 
         # Connect to the server
         settings = get_settings()
-        if settings.PRODUCTION:
-            s = smtplib.SMTP(settings.MAIL_LOCALHOST)
-        else:
-            s = smtplib.SMTP_SSL(settings.MAIL_REMOTE_HOST)
-            s.login(self.user, password)
+
+        s = smtplib.SMTP_SSL(settings.MAIL_HOST)
+        s.login(self.user, password)
 
         s.sendmail(self.msg['From'], self.recipients, self.msg.as_string())
         s.quit()
