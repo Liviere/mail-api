@@ -4,10 +4,11 @@ from typing import Optional
 
 # Token Models
 class Token(BaseModel):
-    access_token: str
-    token_type: str
+    accessToken: str
+    tokenType: str
 
 
 class TokenData(BaseModel):
     uid: Optional[str] = None
     ip: str
+    service: str

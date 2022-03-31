@@ -45,7 +45,7 @@ def set_new_tokens(
     access_token = create_token(
         settings.TOKEN_HASH,
         settings.ALGORITHM,
-        values={"sub": uid, "ip": ip},
+        values={"sub": uid, "ip": ip, "service": service_name},
         expires_delta=access_token_expires
     )
 
@@ -72,7 +72,7 @@ def decode_token(token, key, algorithm, ip):
         tokenIP: str = payload.get("ip")
         if ip != tokenIP:
             return False
-        token_data = TokenData(uid=uid, ip=ip)
+        token_data = TokenData(uid=uid, ip=ip, service=payload.get("service"))
         return token_data
     except jwt.PyJWTError as err:
         print(err)

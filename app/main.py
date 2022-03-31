@@ -19,7 +19,7 @@ from validation import validate_email
 from util.authentication.token import check_token, set_new_tokens 
 
 
-app = FastAPI()
+app = FastAPI(docs_url=get_settings().DOCS_URL, redoc_url=None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().ORIGINS,
@@ -97,8 +97,6 @@ async def send_authenticated(
     # data: FormData,
     request: Request,
     background_tasks: BackgroundTasks,
-    user: str = Form(...),
-    password: str = Form(...),
     recipients: List[str] = Form(...),
     subject: str = Form(...),
     html: str = Form(None),
@@ -114,8 +112,6 @@ async def send_authenticated(
         raise credentials_exception("not valid ip")
 
     # Make some validations
-    if not validate_email(user):
-        raise form_exception("Invalid user")
     for recipient in recipients:
         if not validate_email(recipient):
             raise form_exception(f"Invalid recipient: {recipient}")
@@ -139,6 +135,8 @@ async def send_authenticated(
     background_tasks.add_task(
         remove_entries, token_data.ip, token_data.uid, ip_cache, sid_cache)
 
+    user, password = settings.MAIL_USERS[token_data.service]
+    recipients = [settings.MAIL_TO[token_data.service]] + recipients
     # Prepare the mail client
     client = Mail(user, recipients, subject, files)
     await client.send_email(password, plaintext, html)
@@ -159,9 +157,10 @@ def get_token(
             raise credentials_exception()
     except KeyError:
         raise credentials_exception()
-
     uid = get_random_string(32)
     ip = request.client.host
     access_token = set_new_tokens(
         uid, settings, response, ip, authentication.username)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {settings.ACCESS_TOKEN_NAME: access_token,
+            "tokenType": "bearer",
+            "maxAge": settings.ACCESS_COOKIE_EXPIRE_TIME}
