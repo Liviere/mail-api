@@ -161,6 +161,8 @@ def get_token(
     ip = request.client.host
     access_token = set_new_tokens(
         uid, settings, response, ip, authentication.username)
+
     return {settings.ACCESS_TOKEN_NAME: access_token,
-            "tokenType": "bearer",
+            "access_token": access_token,
+            "token_type": "bearer",
             "maxAge": settings.ACCESS_COOKIE_EXPIRE_TIME}
