@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from aiocache import caches
+from aiocache import Cache, caches
 
 from settings import Settings
 
@@ -37,3 +37,26 @@ def use_caches():
         }
     })
     return caches
+
+
+async def close_caches(settings: Settings):
+    print("Closing Caches")
+    caches = use_caches()
+    sidCache = caches.get(settings.REQUESTS_SID_CACHE)
+    ipCache = caches.get(settings.REQUESTS_IP_CACHE)
+    await close_cache(sidCache)
+    await close_cache(ipCache)
+
+
+async def clear_caches(settings: Settings):
+    print("Clearing Caches")
+    caches = use_caches()
+    sidCache = caches.get(settings.REQUESTS_SID_CACHE)
+    ipCache = caches.get(settings.REQUESTS_IP_CACHE)
+    await sidCache.clear()
+    await ipCache.clear()
+
+
+async def close_cache(cache: Cache.REDIS):
+    await cache.clear()
+    await cache.close()

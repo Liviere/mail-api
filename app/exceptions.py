@@ -13,3 +13,7 @@ def form_exception(detail="The form data has been compromised"):
 
 def file_exception(detail="The file size is above the max limit"):
     return HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail)
+
+
+def unauthorized_exception(detail="The ip reached too many request"):
+    return HTTPException(status.HTTP_403_FORBIDDEN, detail)

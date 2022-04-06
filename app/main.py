@@ -7,8 +7,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from cache import use_caches, get_settings
+from cache import clear_caches, close_caches, use_caches, get_settings
 from exceptions import credentials_exception, form_exception
+from exceptions import unauthorized_exception
 from mail import Mail
 from models.token import TokenData
 from settings import Settings
@@ -16,7 +17,7 @@ from util.date import get_current_time
 from util.random_string import get_random_string
 from util.tasks import remove_entries
 from validation import validate_email
-from util.authentication.token import check_token, set_new_tokens 
+from util.authentication.token import check_token, set_new_tokens
 
 
 app = FastAPI(docs_url=get_settings().DOCS_URL, redoc_url=None)
@@ -28,11 +29,16 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def startup():
+    settings = get_settings()
+    await clear_caches(settings)
+
+
 @app.on_event("shutdown")
 async def shutdown():
-    print("Clearing Caches")
-    caches = use_caches()
-    await caches.close()
+    settings = get_settings()
+    await close_caches(settings)
 
 
 @app.post('/')
@@ -125,7 +131,7 @@ async def send_authenticated(
     sid_check = await sid_cache.get(token_data.uid)
 
     if ip_check or sid_check:
-        return JSONResponse({"status": "canceled", "info": "too many request"})
+        raise unauthorized_exception()
 
     # Store request data to set the temporary restrictions to access the API
     await ip_cache.set(token_data.ip, get_current_time())
