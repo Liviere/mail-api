@@ -41,63 +41,6 @@ async def shutdown():
     await close_caches(settings)
 
 
-@app.post('/')
-async def send(
-    # data: FormData,
-    background_tasks: BackgroundTasks,
-    serviceName: str = Form(...),
-    serviceKey: str = Form(...),
-    user: str = Form(...),
-    password: str = Form(...),
-    recipients: List[str] = Form(...),
-    subject: str = Form(...),
-    ip: str = Form(...),
-    sid: str = Form(...),
-    html: str = Form(None),
-    plaintext: str = Form(None),
-    files:  List[UploadFile] = File(None),
-    caches: CacheHandler = Depends(use_caches),
-    settings: Settings = Depends(get_settings)
-):
-    # Make some validations
-    if not validate_email(user):
-        raise form_exception("Invalid user")
-    for recipient in recipients:
-        if not validate_email(recipient):
-            raise form_exception(f"Invalid recipient: {recipient}")
-
-    # Check the service authentication credentials
-    try:
-        if serviceKey != settings.SERVICES_KEYS[serviceName]:
-            raise credentials_exception()
-    except KeyError:
-        raise credentials_exception()
-
-    # Connect to cache
-    ip_cache: Cache.REDIS = caches.get(settings.REQUESTS_IP_CACHE)
-    sid_cache: Cache.REDIS = caches.get(settings.REQUESTS_SID_CACHE)
-
-    # Check if the user recently sent any requests
-    ip_check = await ip_cache.get(ip)
-    sid_check = await sid_cache.get(sid)
-
-    if ip_check or sid_check:
-        return JSONResponse({"status": "canceled", "info": "too many request"})
-
-    # Store request data to set the temporary restrictions to access the API
-    await ip_cache.set(ip, get_current_time())
-    await sid_cache.set(sid, get_current_time())
-
-    # Remove restrictions after 60 seconds
-    background_tasks.add_task(remove_entries, ip, sid, ip_cache, sid_cache)
-
-    # Prepare the mail client
-    client = Mail(user, recipients, subject, files)
-    await client.send_email(password, plaintext, html)
-
-    return JSONResponse({"status": "sent"})
-
-
 @app.post('/api/v1/send')
 async def send_authenticated(
     request: Request,
