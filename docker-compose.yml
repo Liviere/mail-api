@@ -3,8 +3,8 @@ services:
   mail-api:
     build: .
     container_name: mail-api
-    # ports:
-    #   - '80:80'
+    ports:
+      - '80:80'
     networks:
       - mail-api-network
     restart: unless-stopped

@@ -3,6 +3,8 @@
 An simple API application to handle sending mails from the frontend services.
 It's mainly based on [FastAPI]("https://fastapi.tiangolo.com/").
 
+It has built-in request validations. It also protects against too frequent sending of e-mails.
+
 ## Configuration
 
 First, before begin, set the application config with the `settings.py` file.
@@ -75,13 +77,57 @@ class Settings(BaseSettings):
     DOCS_URL = False  # e.g "/docs" | False
 ```
 
+## Usage
+
+To send a message, you have to send a POST request to route `/api/v1/send` with formData which contains:
+
+- recipients: List[str] `required`,
+- subject: str `required`,
+- html: str,
+- plaintext: str,
+- files: List[UploadFile]),
+
+It must also have an Bearer authorization header with access token.
+You can get it by sending a POST request to `/api/v1/token` with service name and password.
+
+> :warning: it's best to do it on the server side, and then pass the token to the client. Otherwise, someone might use your access without you knowing.
+
+### Javascript Examples:
+
+```javascript
+## Getting the access token
+
+const formDataAsString = `username=${SERVICE_NAME}` + `&password=${SERVICE_PASSWORD}`;
+await axios({
+	method: 'POST',
+	data: formDataAsString,
+	headers: {
+		Authorization: `Bearer ${accessToken}`,
+	},
+	url: `${API_HOSTNAME}/api/v1/token`,
+})
+
+## Sending a message
+
+await axios({
+	method: 'POST',
+	data: formData,
+	headers: {
+		Authorization: `Bearer ${accessToken}`,
+	},
+	url: `${API_HOSTNAME}/api/v1/send`,
+})
+```
+
 ## Deployment
 
 ### Docker
 
 1. Clone the repository.
 
-2. Build and run docker containers
+2. Set your own docker configuration with docker-compose.yml (Optional).
+
+3. Build and run docker containers.
 
 ```bash
 docker-compose up
@@ -89,7 +135,7 @@ docker-compose up
 
 ## Update
 
-Pull the latest version from the git
+Pull the latest version from the git.
 
 ```bash
 git fetch
@@ -102,7 +148,7 @@ git pull
 docker stop mail-api
 docker rm mail-api
 docker image rm mail-api:latest
-docker-compose up mail-api -d
+docker-compose up -d mail-api
 ```
 
 ### Both containers
@@ -114,7 +160,7 @@ docker image prune -f
 
 ## Development
 
-1. Set the python enviroment
+1. Set the python enviroment.
 
 > :warning: The application require at least Python 3.8 or newer.
 

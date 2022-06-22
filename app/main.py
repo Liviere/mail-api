@@ -100,7 +100,6 @@ async def send(
 
 @app.post('/api/v1/send')
 async def send_authenticated(
-    # data: FormData,
     request: Request,
     background_tasks: BackgroundTasks,
     recipients: List[str] = Form(...),
