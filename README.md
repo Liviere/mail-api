@@ -1,7 +1,7 @@
 # Mail-API
 
 An simple API application to handle sending mails from the frontend services.
-It's mainly based on [FastAPI]("https://fastapi.tiangolo.com/").
+It's mainly based on [FastAPI](https://fastapi.tiangolo.com/).
 
 It has built-in request validations. It also protects against too frequent sending of e-mails.
 
@@ -43,13 +43,13 @@ class Settings(BaseSettings):
         SERVICES[1]: "SECRET_KEY_2"
     }
 
-    # Mail users credentials
+    # Mail users credentials required to connect by SMTP
     MAIL_USERS = {
         SERVICES[0]: ("user@domain1.com", "USER1_PASSWORD"),
         SERVICES[1]: ("user@domain2.pl", "USER1_PASSWORD")
     }
 
-    # Default mail
+    # Default mails to receive the messages
     MAIL_TO = {
         SERVICES[0]: "contact@domain1.com",
         SERVICES[1]: "contact@domain2.pl"
